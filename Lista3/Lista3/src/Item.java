@@ -26,5 +26,10 @@ public class Item {
         this.chave = chave;
     }
     
-    
+    public int compara(Item item){
+        if(item.getChave()< this.chave)
+            return 1;
+        else
+            return 0;
+    }
 }
