@@ -11,7 +11,8 @@
 public class ArvorePatricia {
 
     //  patNo  nos  slides
-    private static abstract class NoArvorePatricia {}
+    private static abstract class NoArvorePatricia {
+    }
 
     // PatNoInt  nos  slides
     private static class NoInternoArvorePatricia extends NoArvorePatricia {
@@ -47,7 +48,6 @@ public class ArvorePatricia {
             if (chavePesquisa == noAux.chave) {
                 return noAux.quantidade;
             }
-            System.out.println("Registro nao encontrado");
             return 0;
         } else {
             NoInternoArvorePatricia noAux = (NoInternoArvorePatricia) raizAtual;
@@ -116,33 +116,32 @@ public class ArvorePatricia {
     private NoArvorePatricia insere(char chaveInsercao, NoArvorePatricia raizAtual) {
         if (raizAtual == null) {
             return this.criaNoExterno(chaveInsercao);
-        }
-        if (!verificaNoExterno(raizAtual)) {
-            NoInternoArvorePatricia aux = (NoInternoArvorePatricia) raizAtual;
-            if (this.testaBit(aux.indice, chaveInsercao) == 0) {
-                return this.insere(chaveInsercao, aux.filhoEsquerda);
-            } else {
-                return this.insere(chaveInsercao, aux.filhoDireita);
-            }
         } else {
-            NoExternoArvorePatricia aux = (NoExternoArvorePatricia) raizAtual;
-            int i;
-            for (i = 0; i < this.numeroDeBitsNaChave; i++) {
-                if (this.testaBit(i + 1, chaveInsercao) == this.testaBit(i + 1, aux.chave)) {
-                    break;
+            NoArvorePatricia no = raizAtual;
+            while (!this.verificaNoExterno(no)) {
+                NoInternoArvorePatricia aux = (NoInternoArvorePatricia) no;
+                if (this.testaBit(aux.indice, chaveInsercao) == 1) {
+                    no = aux.filhoDireita;
+                } else {
+                    no = aux.filhoEsquerda;
                 }
             }
-            if (i == this.numeroDeBitsNaChave) {
-                aux.quantidade++;
-                System.out.println("Registro ja existente");
-                return aux;
+            NoExternoArvorePatricia aux = (NoExternoArvorePatricia) no;
+            int i = 1;
+            while ((i <= this.numeroDeBitsNaChave) && (this.testaBit(i, chaveInsercao) == this.testaBit(i, aux.chave))) {
+                i++;
             }
-            return this.insereEntre(chaveInsercao, aux, i + 1);
+            if (i > this.numeroDeBitsNaChave) {
+                aux.quantidade++;
+                return raizAtual;
+            } else {
+                return this.insereEntre(chaveInsercao, raizAtual, i);
+            }
         }
     }
 
     public void insere(char chaveInsercao) {
-        this.insere(chaveInsercao, this.raiz);
+        this.raiz = this.insere(chaveInsercao, this.raiz);
     }
 
     public int getNosVisitadosPesquisa() {
@@ -152,5 +151,5 @@ public class ArvorePatricia {
     public int getCaracteresDistintos() {
         return caracteresDistintos;
     }
-}
 
+}
