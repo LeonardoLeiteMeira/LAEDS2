@@ -6,7 +6,7 @@
 
 /**
  *
- * @author Leonardo
+ * @author Leonardo Leite e Savio Cabral
  */
 public class ArvorePatricia {
 
