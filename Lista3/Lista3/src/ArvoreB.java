@@ -19,7 +19,7 @@ public class ArvoreB {
     private Pagina pagRaiz;
     private final int minimoRegistrosPagina, maximoRegistrosPagina;
     private boolean arvoreDesbalanceada;
-    private int regRetorno;
+    private Item regRetorno;
     private int paginasVisitadas;
     private int numeroComparacoes;
     private int maximoRegistros;
@@ -36,7 +36,7 @@ public class ArvoreB {
         this.minimoRegistrosPagina = qtdeminimaRegistros;
         this.maximoRegistrosPagina = 2 * qtdeminimaRegistros;
         arvoreDesbalanceada = false;
-        regRetorno = -1;
+        regRetorno = new Item(-1);
         paginasVisitadas = 0;
         numeroComparacoes = 0;
     }
@@ -51,19 +51,17 @@ public class ArvoreB {
         Pagina paginaRetorno = null;
         if (paginaAtual == null) {
             arvoreDesbalanceada = true;
-            regRetorno = registro.getChave();
+            regRetorno = registro;
         } else {
             int i = 0;
-            while ((i < paginaAtual.numeroCorrenteItens - 1) && (registro.getChave() 
-                    - paginaAtual.itensPagina[i].getChave() > 0)) {
+            while ((i < paginaAtual.numeroCorrenteItens - 1) && ((registro.getChave() - paginaAtual.itensPagina[i].getChave()) > 0)) {
                 i++;
             }
-            if (registro == paginaAtual.itensPagina[i]) {
+            if (registro.getChave() == paginaAtual.itensPagina[i].getChave()) {
                 System.out.println(" Erro : Registro ja existente ");
                 arvoreDesbalanceada = false;
             } else {
-                if (registro.getChave() 
-                        - paginaAtual.itensPagina[i].getChave() > 0) {
+                if (registro.getChave() - paginaAtual.itensPagina[i].getChave() > 0) {
                     i++;
                 }
                 paginaRetorno = insere(registro, paginaAtual.paginasFilhas[i]);
@@ -76,19 +74,19 @@ public class ArvoreB {
                         Pagina apTemp = new Pagina(this.maximoRegistrosPagina);
                         apTemp.paginasFilhas[0] = null;
                         if (i <= this.minimoRegistros) {
-                            this.insereNaPagina(apTemp, paginaAtual.itensPagina[this.maximoRegistros - 1].getChave(), paginaAtual.paginasFilhas[this.maximoRegistros]);
+                            this.insereNaPagina(apTemp, paginaAtual.itensPagina[this.maximoRegistros - 1], paginaAtual.paginasFilhas[this.maximoRegistros]);
                             paginaAtual.numeroCorrenteItens--;
                             this.insereNaPagina(paginaAtual, regRetorno, paginaRetorno);
                         } else {
                             this.insereNaPagina(apTemp, regRetorno, paginaRetorno);
                         }
                         for (int j = this.minimoRegistrosPagina + 1; j < this.maximoRegistrosPagina; j++) {
-                            this.insereNaPagina(apTemp, paginaAtual.itensPagina[j].getChave(), paginaAtual.paginasFilhas[j + 1]);
+                            this.insereNaPagina(apTemp, paginaAtual.itensPagina[j], paginaAtual.paginasFilhas[j + 1]);
                             paginaAtual.paginasFilhas[j + 1] = null;
                         }
                         paginaAtual.numeroCorrenteItens = this.minimoRegistrosPagina;
                         apTemp.paginasFilhas[0] = paginaAtual.paginasFilhas[this.minimoRegistros + 1];
-                        regRetorno = paginaAtual.itensPagina[this.minimoRegistros].getChave();
+                        regRetorno = paginaAtual.itensPagina[this.minimoRegistros];
                         paginaRetorno = apTemp;
                     }
                 }
@@ -103,14 +101,14 @@ public class ArvoreB {
     *METODO INSERE NA PÁGINA 
     *
      */
-    private void insereNaPagina(Pagina paginaAux, int reg, Pagina paginaDireita) {
+    private void insereNaPagina(Pagina paginaAux, Item reg, Pagina paginaDireita) {
         int aux = paginaAux.numeroCorrenteItens - 1;
-        while ((aux >= 0) && (reg < paginaAux.itensPagina[aux].getChave()) ) {
+        while ((aux >= 0) && (reg.getChave() < paginaAux.itensPagina[aux].getChave()) ) {
             paginaAux.itensPagina[aux + 1] = paginaAux.itensPagina[aux];
             paginaAux.paginasFilhas[aux + 2] = paginaAux.paginasFilhas[aux + 1];
             aux--;
         }
-        paginaAux.itensPagina[aux + 1].setChave(reg);
+        paginaAux.itensPagina[aux + 1] = reg;
         paginaAux.paginasFilhas[aux + 2] = paginaDireita;
         paginaAux.numeroCorrenteItens++;
     }
@@ -147,36 +145,48 @@ public class ArvoreB {
     *
      */
     private Item pesquisa(Item itemAux, Pagina ap) {
-        if (ap == null)
-            return null; // Registro @{\it n\~ao}@ econtrado
-        else {
+        if (ap == null){
+            return null;
+        }else {
+            paginasVisitadas++;
             int i = 0;
-            while ((i < ap.numeroCorrenteItens - 1) && (itemAux.compara(ap.itensPagina[i]) > 0))
+            while ((i < ap.numeroCorrenteItens - 1) && (itemAux.compara(ap.itensPagina[i]) == 1)){
                 i++;
-            if (itemAux.compara(ap.itensPagina[i]) == 0){
-                paginasVisitadas++;
+                numeroComparacoes++;
+            }
+            if (itemAux.compara(ap.itensPagina[i]) == 0){ 
+                numeroComparacoes++;
                 return ap.itensPagina[i];
             }
             else if (itemAux.compara(ap.itensPagina[i]) < 0){
-                paginasVisitadas++;
+                numeroComparacoes+=2;
                 return pesquisa(itemAux, ap.paginasFilhas[i]);
             }
             else{
-                paginasVisitadas++;
+                numeroComparacoes+=2;
                 return pesquisa(itemAux, ap.paginasFilhas[i + 1]);
             }
         }
     }
 
     public Item pesquisa(Item reg) {
-        paginasVisitadas=0;
         return this.pesquisa(reg, this.pagRaiz);
     }
-    
-    public Pagina insere(Item reg){
-        return this.insere(reg, pagRaiz);
+     
+    public void insere(Item reg) {
+        Pagina apRetorno = insere(reg, this.pagRaiz);
+        if (arvoreDesbalanceada) {
+            Pagina apTemp = new Pagina(this.maximoRegistrosPagina);
+            apTemp.itensPagina[0] = regRetorno;
+            apTemp.paginasFilhas[0] = this.pagRaiz;
+            apTemp.paginasFilhas[1] = apRetorno;
+            this.pagRaiz = apTemp;
+            this.pagRaiz.numeroCorrenteItens++;
+        } else {
+            this.pagRaiz = apRetorno;
+        }
     }
-    
+ 
     public int getPaginasVisitadas(){
         return paginasVisitadas;
     }
@@ -185,3 +195,5 @@ public class ArvoreB {
         return numeroComparacoes;
     }
 }
+
+
